@@ -137,7 +137,7 @@ class DatabaseView(SupersetModelView, DeleteMixin, YamlExportMixin):  # noqa
 
     list_columns = [
         'database_name', 'backend', 'allow_run_sync', 'allow_run_async',
-        'allow_dml', 'allow_csv_upload', 'expose_in_sqllab', 'creator', 'modified']
+        'allow_dml', 'allow_csv_upload', 'expose_in_sqllab', 'creator', 'changed_on']#'modified']
     order_columns = [
         'database_name', 'allow_run_sync', 'allow_run_async', 'allow_dml',
         'modified', 'allow_csv_upload', 'expose_in_sqllab',
@@ -247,6 +247,7 @@ class DatabaseView(SupersetModelView, DeleteMixin, YamlExportMixin):  # noqa
         'modified': _('Modified'),
         'allow_multi_schema_metadata_fetch': _('Allow Multi Schema Metadata Fetch'),
         'backend': _('Backend'),
+        'changed_on': '修改时间',
     }
 
     def pre_add(self, db):
@@ -445,7 +446,7 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
         'slice_name', 'description', 'viz_type', 'datasource_name', 'owners',
     )
     list_columns = [
-        'slice_link', 'viz_type', 'datasource_link', 'creator', 'modified']
+        'slice_link', 'viz_type', 'datasource_link', 'creator', 'changed_on']#'modified']
     order_columns = ['viz_type', 'datasource_link', 'modified']
     edit_columns = [
         'slice_name', 'description', 'viz_type', 'owners', 'dashboards',
@@ -481,6 +482,7 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
         'slice_name': _('Name'),
         'table': _('Table'),
         'viz_type': _('Visualization Type'),
+        'changed_on': '修改时间',
     }
 
     def pre_add(self, obj):
@@ -553,7 +555,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
     add_title = _('Add Dashboard')
     edit_title = _('Edit Dashboard')
 
-    list_columns = ['dashboard_link', 'creator', 'modified']
+    list_columns = ['dashboard_link', 'creator', 'changed_on']#'modified']
     order_columns = ['modified']
     edit_columns = [
         'dashboard_title', 'slug', 'owners', 'position_json', 'css',
@@ -593,6 +595,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
         'css': _('CSS'),
         'json_metadata': _('JSON Metadata'),
         'table_names': _('Underlying Tables'),
+        'changed_on': '修改时间',
     }
 
     def pre_add(self, obj):

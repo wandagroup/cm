@@ -64,8 +64,8 @@ builtin_time_grains = {
     '1969-12-28T00:00:00Z/P1W': 'week_start_sunday',
     '1969-12-29T00:00:00Z/P1W': 'week_start_monday',
     'P1W/1970-01-03T00:00:00Z': 'week_ending_saturday',
-    'P1W/1970-01-04T00:00:00Z': 'week_ending_sunday',
-}
+    'P1W/1970-01-04T00:00:00Z': 'week_ending_sunday',}
+time_grains_cn = {'Time Column': '空', 'second': '秒', 'minute': '分钟', '5 minute': '5 分钟', '10 minute': '10 分钟', '15 minute': '15 分钟', 'half hour': '半小时', 'hour': '小时', 'day': '天', 'week': '周', 'month': '月', 'quarter': '季', 'year': '年', 'week_start_sunday': 'week_start_sunday', 'week_start_monday': 'week_start_monday', 'week_ending_saturday': 'week_ending_saturday', 'week_ending_sunday': 'week_ending_sunday'}
 
 
 def _create_time_grains_tuple(time_grains, time_grain_functions, blacklist):
@@ -74,7 +74,7 @@ def _create_time_grains_tuple(time_grains, time_grain_functions, blacklist):
     for duration, func in time_grain_functions.items():
         if duration not in blacklist:
             name = time_grains.get(duration)
-            ret_list.append(Grain(name, _(name), func, duration))
+            ret_list.append(Grain(time_grains_cn[name], name, func, duration))
     return tuple(ret_list)
 
 

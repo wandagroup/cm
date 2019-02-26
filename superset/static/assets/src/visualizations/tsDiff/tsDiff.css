@@ -1,0 +1,21 @@
+.tsDiff svg #circle circle {
+    fill: none;
+    pointer-events: all;
+}
+
+.tsDiff svg .group path {
+    fill-opacity: .6;
+}
+
+.tsDiff svg path.chord {
+    stroke: #000;
+    stroke-width: .25px;
+}
+
+.tsDiff svg #circle:hover path.fade {
+    opacity: 0.2;
+}
+#tsDiffChart{
+    margin: auto;
+    bottom: 5px;
+}

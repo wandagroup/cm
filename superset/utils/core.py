@@ -40,7 +40,7 @@ from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from sqlalchemy.types import TEXT, TypeDecorator
 
 from superset.exceptions import SupersetException, SupersetTimeoutException
-
+TIME_GRAIN_OPTIONS = {'秒': 'seconds','分钟': 'minutes','小时': 'hours','天': 'days','周': 'weeks','月': 'months','年': 'years'}
 
 logging.getLogger('MARKDOWN').setLevel(logging.INFO)
 
@@ -925,7 +925,18 @@ def get_since_until(time_range: Optional[str] = None,
         'Last year': (today - relativedelta(years=1), today),
     }
 
+    chinese_time_range = {
+        '过去一天': 'Last day',
+        '上周': 'Last week',
+        '过去一月': 'Last month',
+        '过去一季度': 'Last quarter',
+        '过去一年': 'Last year',
+        '不限': 'No filter',
+    }
+
     if time_range:
+        if time_range in chinese_time_range:      # chongming changed
+            time_range = chinese_time_range[time_range]   # chongming changed
         if separator in time_range:
             since, until = time_range.split(separator, 1)
             if since and since not in common_time_frames:
@@ -938,12 +949,12 @@ def get_since_until(time_range: Optional[str] = None,
             since = until = None
         else:
             rel, num, grain = time_range.split()
-            if rel == 'Last':
-                since = today - relativedelta(**{grain: int(num)})
+            if rel == '过去': # rel == 'Last':
+                since = today - relativedelta(**{TIME_GRAIN_OPTIONS[grain]: int(num)})
                 until = today
             else:  # rel == 'Next'
                 since = today
-                until = today + relativedelta(**{grain: int(num)})
+                until = today + relativedelta(**{TIME_GRAIN_OPTIONS[grain]: int(num)})
     else:
         since = since or ''
         if since:

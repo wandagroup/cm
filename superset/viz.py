@@ -31,6 +31,24 @@ from past.builtins import basestring
 import polyline
 import simplejson as json
 
+
+###########for R plot#############
+from rpy2.robjects.packages import importr
+base = importr('base')
+stats = importr('stats')
+graphics = importr('graphics')
+grDevices = importr('grDevices')
+plot = graphics.plot
+base64 = importr('base64')
+import rpy2.robjects.packages as packages
+openair = importr('openair')
+from rpy2.robjects import r, pandas2ri
+pandas2ri.activate()
+############end for R plot##########
+
+
+
+
 from superset import app, cache, get_css_manifest_files
 from superset.exceptions import NullValueException, SpatialException
 from superset.utils import core as utils
@@ -1215,6 +1233,33 @@ class NVD3TimeSeriesViz(NVD3Viz):
                 df2 = self.process_data(df2)
                 self._extra_chart_data.append((label, df2))
 
+    def valueStandard(self, chartData, valueIII, valueIV, valueV):
+
+        valuesSampleLine_III = []
+        valuesSampleLine_IV = []
+        valuesSampleLine_V = []
+        '''
+        for iii in chartData[0]['values']:
+            x_y = {'x': iii['x'], 'y': valueIII}
+            valuesSampleLine_III.append(x_y)
+        for iv in chartData[0]['values']:
+            x_y = {'x': iv['x'], 'y': valueIV}
+            valuesSampleLine_IV.append(x_y)
+        for v in chartData[0]['values']:
+            x_y = {'x': v['x'], 'y': valueV}
+            valuesSampleLine_V.append(x_y)
+        '''
+        x0 = chartData[0]['values'][0]
+        x1 = chartData[0]['values'][-1]
+        valuesSampleLine_III.append({'x': x0['x'], 'y': valueIII})
+        valuesSampleLine_III.append({'x': x1['x'], 'y': valueIII})
+        valuesSampleLine_IV.append({'x': x0['x'], 'y': valueIV})
+        valuesSampleLine_IV.append({'x': x1['x'], 'y': valueIV})
+        valuesSampleLine_V.append({'x': x0['x'], 'y': valueV})
+        valuesSampleLine_V.append({'x': x1['x'], 'y': valueV})
+        
+        return valuesSampleLine_III, valuesSampleLine_IV, valuesSampleLine_V
+
     def get_data(self, df):
         fd = self.form_data
         comparison_type = fd.get('comparison_type') or 'values'
@@ -1252,6 +1297,93 @@ class NVD3TimeSeriesViz(NVD3Viz):
                     self.to_series(
                         diff, classed='time-shift-{}'.format(i), title_suffix=label))
 
+        if fd.get('viz_type') == 'line' and len(fd.get('filters')):   # change start
+            len_filters = len(fd.get('filters'))
+            filters_col = fd.get('filters')
+
+            sample_line = {'key': tuple(['I~III类'])}
+            sample_line_IV = {'key': tuple(['IV类'])}
+            sample_line_V = {'key': tuple(['V类'])}
+
+            for i in range(len_filters):
+                if (filters_col[i]['col'] in ['监测项目中文', '监测指标']) and len(filters_col[i]['val']) == 1:
+
+                    if filters_col[i]['val'][0] == '溶解氧':
+                        values_sample_line_III, values_sample_line_IV, values_sample_line_V = self.valueStandard(chart_data, 5, 3, 2)
+                        sample_line['values'] = values_sample_line_III
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line_V['values'] = values_sample_line_V
+                        #sample_line['color'] = 'green'
+                    elif filters_col[i]['val'][0] == '高锰酸盐指数':
+                        values_sample_line_III, values_sample_line_IV, values_sample_line_V = self.valueStandard(chart_data, 6, 10, 15)
+                        sample_line['values'] = values_sample_line_III
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line_V['values'] = values_sample_line_V
+                    elif filters_col[i]['val'][0] == '化学需氧量':
+                        values_sample_line_III, values_sample_line_IV, values_sample_line_V = self.valueStandard(chart_data, 20, 30, 40)
+                        sample_line['values'] = values_sample_line_III
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line_V['values'] = values_sample_line_V
+                    elif filters_col[i]['val'][0] == '五日生化需氧量':
+                        values_sample_line_III, values_sample_line_IV, values_sample_line_V = self.valueStandard(chart_data, 4, 6, 10)
+                        sample_line['values'] = values_sample_line_III
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line_V['values'] = values_sample_line_V
+                    elif filters_col[i]['val'][0] == '氨氮':
+                        values_sample_line_III, values_sample_line_IV, values_sample_line_V = self.valueStandard(chart_data, 1, 1.5, 2)
+                        sample_line['values'] = values_sample_line_III
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line_V['values'] = values_sample_line_V
+                    elif filters_col[i]['val'][0] == '总磷':
+                        values_sample_line_III, values_sample_line_IV, values_sample_line_V = self.valueStandard(chart_data, 0.2, 0.3, 0.4)
+                        sample_line['values'] = values_sample_line_III
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line_V['values'] = values_sample_line_V
+                    elif filters_col[i]['val'][0] == '石油类':
+                        values_sample_line_III, values_sample_line_IV, values_sample_line_V = self.valueStandard(chart_data, 0.05, 0.5, 1)
+                        sample_line['values'] = values_sample_line_III
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line_V['values'] = values_sample_line_V
+                    elif filters_col[i]['val'][0] == '挥发酚':
+                        values_sample_line_III, values_sample_line_IV, values_sample_line_V = self.valueStandard(chart_data, 0.005, 0.01, 0.1)
+                        sample_line['values'] = values_sample_line_III
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line_V['values'] = values_sample_line_V
+                    else:
+                        break
+                        
+                    chart_data.append(sample_line)
+                    chart_data.append(sample_line_IV)
+                    chart_data.append(sample_line_V)
+                    break                                ## change end
+
+        '''
+        if fd.get('viz_type') == 'line' and len(fd.get('filters')):   # change start
+            len_filters = len(fd.get('filters'))
+            filters_col = fd.get('filters')
+            for i in range(len_filters):
+                if filters_col[i]['col'] == '监测项目中文' and len(filters_col[i]['val']) == 1:
+                    if filters_col[i]['val'][0] == '溶解氧':
+                        sample_line = {}
+                        sample_line['key'] = tuple(['I~III类溶解氧'])
+                        sample_line_IV = {'key': tuple(['IV类溶解氧'])}
+                        values_sample_line = []
+                        values_sample_line_IV = []
+                        for x in chart_data[0]['values']:
+                            x_y = {'x': x['x'], 'y': 5}
+                            values_sample_line.append(x_y)
+                        for iv in chart_data[0]['values']:
+                            x_y = {'x': iv['x'], 'y': 3}
+                            values_sample_line_IV.append(x_y)
+                        sample_line_IV['values'] = values_sample_line_IV
+                        sample_line['values'] = values_sample_line
+                        #sample_line['color'] = 'green'
+                        chart_data.append(sample_line)
+                        chart_data.append(sample_line_IV)   
+                        break                                ## change end
+        '''
+        #print(self.form_data)
+        #print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n', chart_data)
         return sorted(chart_data, key=lambda x: tuple(x['key']))
 
 
@@ -1358,6 +1490,772 @@ class NVD3DualLineViz(NVD3Viz):
         chart_data = self.to_series(df)
         return chart_data
 
+class NVD3rWindRoseViz(NVD3Viz):
+
+    """A R WindRose plot"""
+
+    viz_type = 'rwindrose'
+    verbose_name = _('r wind rose test')
+    sort_series = False
+    is_timeseries = True
+
+    def query_obj(self):
+        d = super(NVD3rWindRoseViz, self).query_obj()
+        m1 = self.form_data.get('metric')
+        m2 = self.form_data.get('metric_2')
+        d['metrics'] = [m1, m2]
+        #print('####m1 m2############')
+        #print(m1)
+        #print(m2)
+
+        if not m1:
+            raise Exception(_('Pick a metric for pollutant 1!'))
+        if not m2:
+            raise Exception(_('Pick a metric for pollutant 2!'))
+        if m1.get('column').get('column_name') == m2.get('column').get('column_name'):
+            raise Exception(_('Please choose different metrics'
+                            ' for pollutant 1 and pollutant 2'))
+        #print('@@@@@@@@d is @@@@@@@@@@@@')
+        #print(d)
+        return d
+
+    def to_series(self, df, classed=''):
+        cols = []
+        for col in df.columns:
+            if col == '':
+                cols.append('N/A')
+            elif col is None:
+                cols.append('NULL')
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict('series')
+        chart_data = []
+        metrics = [
+            self.form_data.get('metric'),
+            self.form_data.get('metric_2'),
+        ]
+        #print('####metrics#########')
+        #print(metrics)
+        for i, m in enumerate(metrics):
+            m = utils.get_metric_name(m)
+            ys = series[m]
+            if df[m].dtype.kind not in 'biufc':
+                continue
+            series_title = m
+            d = {
+                'key': series_title,
+                'classed': classed,
+                'values': [
+                    {'x': ds, 'y': ys[ds] if ds in ys else None}
+                    for ds in df.index
+                ],
+                'yAxis': i + 1,
+                'type': 'line',
+            }
+            chart_data.append(d)
+        #print('######the first chart data######')
+        #print(chart_data)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric = self.get_metric_label(fd.get('metric'))
+        metric_2 = self.get_metric_label(fd.get('metric_2'))
+        print('color_scheme')
+        print(self.get_metric_label(fd.get('color_scheme')))
+        print('self.form_data')
+        print(self.form_data)
+        print(self.form_data.get('metric_2').get('column').get('column_name'))
+        metric_column_name = self.form_data.get('metric').get('column').get('column_name')
+        metric_column_name_2 = self.form_data.get('metric_2').get('column').get('column_name')
+        plot_height = int(self.get_metric_label(fd.get('plot_height')))
+        plot_width = int(self.get_metric_label(fd.get('plot_width')))
+        statistic_type = self.get_metric_label(fd.get('statistic_type'))
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            values=[metric, metric_2])
+
+        #print(df)
+        chart_data = self.to_series(df)
+        #print('###########chart_data as follows###########')
+        #print(chart_data)
+        df = pd.DataFrame(data=chart_data)
+        #print('#########df values [0]########')
+        #print(df['values'][0])
+        df1 = pd.DataFrame(data=df['values'][0])
+        df1.columns = ['date','wd']
+        df2 = pd.DataFrame(data=df['values'][1])
+        df2.columns = ['date','ws']
+        df = pd.merge(df1,df2, on='date', how='outer')
+        #print('###############df#############')
+        #print(df)
+        #return chart_data
+        #r plot test
+        #from rpy2.robjects.packages import importr
+        #print(importr)
+        #gen png plot
+        df['date'] = pd.to_datetime(df['date'])
+        r_df = pandas2ri.py2ri(df)
+
+        pngfile = base.tempfile()
+        grDevices.png( pngfile, width = plot_width, height = plot_height )
+        #openair.timeVariation(mydata,'pm25')
+        openair.windRose(r_df, type=statistic_type)
+        grDevices.dev_off()
+        imgdata = base64.img( pngfile )
+
+        divstring = '<div>'+imgdata[0]+'</div> '
+        return  divstring
+
+class NVD3rTheilSenViz(NVD3Viz):
+
+    """A R TheilSen plot"""
+
+    viz_type = 'rtheilsen'
+    verbose_name = _('r theilsen test')
+    sort_series = False
+    is_timeseries = True
+
+    def query_obj(self):
+        d = super(NVD3rTheilSenViz, self).query_obj()
+        d['metrics'] = [self.form_data.get('metric')]
+
+        if not d:
+            raise Exception(_('Pick a metric for pollutant!'))
+        return d
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric_column_name = self.form_data.get('metric')
+        plot_height = int(self.get_metric_label(fd.get('plot_height')))
+        plot_width = int(self.get_metric_label(fd.get('plot_width')))
+        deseason_type = self.get_metric_label(fd.get('normalized'))
+
+        metrics = self.metric_labels
+        metric_column_name=['date']
+        for i in range(len(metrics)):
+            metric_column_name.append(metrics[i].split('(')[1].split(')')[0])
+
+        columns = fd.get('columns') or []
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            columns=columns,
+            values=metrics)
+
+        df = df.reset_index() #convert pandas series to dataframe with timestamp
+        df.columns =  metric_column_name
+
+
+        #gen png plot
+        df['date'] = pd.to_datetime(df['date'])  
+        r_df = pandas2ri.py2ri(df)
+        pngfile = base.tempfile()
+        grDevices.png( pngfile, width = plot_width, height = plot_height )
+        #myplot$plot$hour$x.scales$at<-c(seq(0,23,3),23)')
+        openair.TheilSen(r_df, pollutant=metric_column_name[1], deseason=deseason_type)
+        grDevices.dev_off()
+        imgdata = base64.img( pngfile )
+
+        divstring = '<div>'+imgdata[0]+'</div> '
+        return  divstring
+
+class NVD3rTrajPlotViz(NVD3Viz):
+
+    """A R TrajPlot plot"""
+
+    viz_type = 'rtrajplot'
+    verbose_name = _('r trajplot test')
+    sort_series = False
+    is_timeseries = True
+    def query_obj(self):
+        d = super(NVD3rTrajPlotViz, self).query_obj()
+        d['metrics'] = [self.form_data.get('metric')]
+
+        if not d:
+            raise Exception(_('Pick a metric for pollutant!'))
+        return d
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric_column_name = self.form_data.get('metric')
+        plot_height = int(self.get_metric_label(fd.get('plot_height')))
+        plot_width = int(self.get_metric_label(fd.get('plot_width')))
+        deseason_type = self.get_metric_label(fd.get('normalized'))
+
+        metrics = self.metric_labels
+        metric_column_name=['date']
+        for i in range(len(metrics)):
+            metric_column_name.append(metrics[i].split('(')[1].split(')')[0])
+
+        columns = fd.get('columns') or []
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            columns=columns,
+            values=metrics)
+
+        df = df.reset_index() #convert pandas series to dataframe with timestamp
+        df.columns =  metric_column_name
+        #gen png plot
+        df['date'] = pd.to_datetime(df['date'])  
+        r_df = pandas2ri.py2ri(df)
+        pngfile = base.tempfile()
+        grDevices.png( pngfile, width = plot_width, height = plot_height )
+        #myplot$plot$hour$x.scales$at<-c(seq(0,23,3),23)')
+        openair.TheilSen(r_df, pollutant=metric_column_name[1], deseason=deseason_type)
+        grDevices.dev_off()
+        imgdata = base64.img( pngfile )
+
+        divstring = '<div>'+imgdata[0]+'</div> '
+        return  divstring
+
+
+class NVD3rPolarAnnulusViz(NVD3Viz):
+
+    """A R PolarAnnulus plot"""
+
+    viz_type = 'rpolarannulus'
+    verbose_name = _('r polar annulus rose test')
+    sort_series = False
+    is_timeseries = True
+
+    def query_obj(self):
+        d = super(NVD3rPolarAnnulusViz, self).query_obj()
+        m1 = self.form_data.get('metric')
+        m2 = self.form_data.get('metric_2')
+        m3 = self.form_data.get('metric_3')
+        d['metrics'] = [m1, m2, m3]
+
+        if not m1:
+            raise Exception(_('Pick a metric for wd!'))
+        if not m2:
+            raise Exception(_('Pick a metric for ws!'))
+        if not m3:
+            raise Exception(_('Pick a metric for 污染物!'))
+        if m1.get('column').get('column_name') == m2.get('column').get('column_name'):
+            raise Exception(_('Please choose different metrics'
+                            ' for wd and ws'))
+        return d
+
+    def to_series(self, df, classed=''):
+        cols = []
+        for col in df.columns:
+            if col == '':
+                cols.append('N/A')
+            elif col is None:
+                cols.append('NULL')
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict('series')
+        chart_data = []
+        metrics = [
+            self.form_data.get('metric'),
+            self.form_data.get('metric_2'),
+            self.form_data.get('metric_3'),
+        ]
+        #print('####metrics#########')
+        #print(metrics)
+        for i, m in enumerate(metrics):
+            m = utils.get_metric_name(m)
+            ys = series[m]
+            if df[m].dtype.kind not in 'biufc':
+                continue
+            series_title = m
+            d = {
+                'key': series_title,
+                'classed': classed,
+                'values': [
+                    {'x': ds, 'y': ys[ds] if ds in ys else None}
+                    for ds in df.index
+                ],
+                'yAxis': i + 1,
+                'type': 'line',
+            }
+            chart_data.append(d)
+        #print('######the first chart data######')
+        #print(chart_data)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric = self.get_metric_label(fd.get('metric'))
+        metric_2 = self.get_metric_label(fd.get('metric_2'))
+        metric_3 = self.get_metric_label(fd.get('metric_3'))
+        print('color_scheme')
+        print(self.get_metric_label(fd.get('color_scheme')))
+        print('self.form_data')
+        print(self.form_data)
+        print(self.form_data.get('metric_2').get('column').get('column_name'))
+        metric_column_name = self.form_data.get('metric').get('column').get('column_name')
+        metric_column_name_2 = self.form_data.get('metric_2').get('column').get('column_name')
+        metric_column_name_3 = self.form_data.get('metric_3').get('column').get('column_name')
+        plot_height = int(self.get_metric_label(fd.get('plot_height')))
+        plot_width = int(self.get_metric_label(fd.get('plot_width')))
+        statistic_type = self.get_metric_label(fd.get('statistic_type'))
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            values=[metric, metric_2, metric_3])
+        #print(df)
+        chart_data = self.to_series(df)
+        #print('###########chart_data as follows###########')
+        #print(chart_data)
+        df = pd.DataFrame(data=chart_data)
+        #print('#########df values [0]########')
+        #print(df['values'][0])
+        df1 = pd.DataFrame(data=df['values'][0])
+        df1.columns = ['date','wd']
+        df2 = pd.DataFrame(data=df['values'][1])
+        df2.columns = ['date','ws']
+        df3 = pd.DataFrame(data=df['values'][2])
+        df3.columns = ['date',metric_column_name_3]
+        df = pd.merge(df1,df2, on='date', how='outer')
+        df = pd.merge(df,df3, on='date', how='outer')
+        #print('###############df#############')
+        #print(df)
+        #return chart_data
+        #r plot test
+        #from rpy2.robjects.packages import importr
+        #print(importr)
+
+        #gen png plot
+        df['date'] = pd.to_datetime(df['date'])
+        r_df = pandas2ri.py2ri(df)
+        pngfile = base.tempfile()
+        grDevices.png( pngfile, width = plot_width, height = plot_height )
+        #openair.timeVariation(mydata,'pm25')
+        openair.polarAnnulus(r_df, period=statistic_type, poll=metric_column_name_3)
+        grDevices.dev_off()
+        imgdata = base64.img( pngfile )
+
+        divstring = '<div>'+imgdata[0]+'</div> '
+        return  divstring
+class NVD3rPollutionRoseViz(NVD3Viz):
+
+    """A R pollutionrose plot"""
+
+    viz_type = 'rpollutionrose'
+    verbose_name = _('r pollution rose test')
+    sort_series = False
+    is_timeseries = True
+
+    def query_obj(self):
+        d = super(NVD3rPollutionRoseViz, self).query_obj()
+        m1 = self.form_data.get('metric')
+        m2 = self.form_data.get('metric_2')
+        m3 = self.form_data.get('metric_3')
+        d['metrics'] = [m1, m2, m3]
+
+        if not m1:
+            raise Exception(_('Pick a metric for wd!'))
+        if not m2:
+            raise Exception(_('Pick a metric for ws!'))
+        if not m3:
+            raise Exception(_('Pick a metric for 污染物!'))
+        if m1.get('column').get('column_name') == m2.get('column').get('column_name'):
+            raise Exception(_('Please choose different metrics'
+                            ' for wd and ws'))
+        return d
+
+    def to_series(self, df, classed=''):
+        cols = []
+        for col in df.columns:
+            if col == '':
+                cols.append('N/A')
+            elif col is None:
+                cols.append('NULL')
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict('series')
+        chart_data = []
+        metrics = [
+            self.form_data.get('metric'),
+            self.form_data.get('metric_2'),
+            self.form_data.get('metric_3'),
+        ]
+        #print('####metrics#########')
+        #print(metrics)
+        for i, m in enumerate(metrics):
+            m = utils.get_metric_name(m)
+            ys = series[m]
+            if df[m].dtype.kind not in 'biufc':
+                continue
+            series_title = m
+            d = {
+                'key': series_title,
+                'classed': classed,
+                'values': [
+                    {'x': ds, 'y': ys[ds] if ds in ys else None}
+                    for ds in df.index
+                ],
+                'yAxis': i + 1,
+                'type': 'line',
+            }
+            chart_data.append(d)
+        #print('######the first chart data######')
+        #print(chart_data)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric = self.get_metric_label(fd.get('metric'))
+        metric_2 = self.get_metric_label(fd.get('metric_2'))
+        metric_3 = self.get_metric_label(fd.get('metric_3'))
+        print('color_scheme')
+        print(self.get_metric_label(fd.get('color_scheme')))
+        print('self.form_data')
+        print(self.form_data)
+        print(self.form_data.get('metric_2').get('column').get('column_name'))
+        metric_column_name = self.form_data.get('metric').get('column').get('column_name')
+        metric_column_name_2 = self.form_data.get('metric_2').get('column').get('column_name')
+        metric_column_name_3 = self.form_data.get('metric_3').get('column').get('column_name')
+        plot_height = int(self.get_metric_label(fd.get('plot_height')))
+        plot_width = int(self.get_metric_label(fd.get('plot_width')))
+        statistic_type = self.get_metric_label(fd.get('statistic_type'))
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            values=[metric, metric_2, metric_3])
+
+        #print(df)
+        chart_data = self.to_series(df)
+        #print('###########chart_data as follows###########')
+        #print(chart_data)
+        df = pd.DataFrame(data=chart_data)
+        #print('#########df values [0]########')
+        #print(df['values'][0])
+        df1 = pd.DataFrame(data=df['values'][0])
+        df1.columns = ['date','wd']
+        df2 = pd.DataFrame(data=df['values'][1])
+        df2.columns = ['date','ws']
+        df3 = pd.DataFrame(data=df['values'][2])
+        df3.columns = ['date',metric_column_name_3]
+        df = pd.merge(df1,df2, on='date', how='outer')
+        df = pd.merge(df,df3, on='date', how='outer')
+        #print('###############df#############')
+        #print(df)
+        #return chart_data
+        #r plot test
+        #from rpy2.robjects.packages import importr
+        #print(importr)
+        base = importr('base')
+        stats = importr('stats')
+        graphics = importr('graphics')
+        grDevices = importr('grDevices')
+        plot = graphics.plot
+        rnorm = stats.rnorm
+        base64 = importr('base64')
+        #pngfile = base.tempfile()
+        #grDevices.png( pngfile, width = 600, height = 600 )
+        #plot(rnorm(100), ylab="random")
+        #grDevices.dev_off()
+        #imgdata = base64.img( pngfile ) #strvector
+        import rpy2.robjects.packages as packages
+        openair = importr('openair')
+        #mydata = packages.data(openair).fetch('mydata')['mydata']
+        #openair.timeVariation(mydata,'pm25')
+
+
+        from rpy2.robjects import r, pandas2ri
+        pandas2ri.activate()
+
+        #gen png plot
+        df['date'] = pd.to_datetime(df['date'])
+        r_df = pandas2ri.py2ri(df)
+        pngfile = base.tempfile()
+        grDevices.png( pngfile, width = plot_width, height = plot_height )
+        #openair.timeVariation(mydata,'pm25')
+        openair.pollutionRose(r_df, type=statistic_type, pollutant=metric_column_name_3)
+        grDevices.dev_off()
+        imgdata = base64.img( pngfile )
+
+        divstring = '<div>'+imgdata[0]+'</div> '
+        return  divstring
+
+
+class NVD3rTimeVariationViz(NVD3Viz):
+
+    """A R TimeVariation plot"""
+
+    viz_type = 'rtimevariation'
+    verbose_name = _('r timevariation test')
+    sort_series = False
+    is_timeseries = True
+
+    def query_obj(self):
+        d = super(NVD3rTimeVariationViz, self).query_obj()
+        d['metrics'] = self.form_data.get('metrics')
+
+        if not d:
+            raise Exception(_('Pick a metric for pollutants!'))
+        return d
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric_column_name = self.form_data.get('metrics')
+        plot_height = int(self.get_metric_label(fd.get('plot_height')))
+        plot_width = int(self.get_metric_label(fd.get('plot_width')))
+        normalized = self.get_metric_label(fd.get('normalized'))
+        statistic_type = self.get_metric_label(fd.get('statistic_type'))
+        timeVariation_type = self.get_metric_label(fd.get('timeVariation_type'))
+
+        metrics = self.metric_labels
+        metric_column_name=['date']
+        for i in range(len(metrics)):
+            metric_column_name.append(metrics[i].split('(')[1].split(')')[0])
+
+        columns = fd.get('columns') or []
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            columns=columns,
+            values=metrics)
+
+        df = df.reset_index() #convert pandas series to dataframe with timestamp
+        df.columns =  metric_column_name
+
+        base = importr('base')
+        stats = importr('stats')
+        graphics = importr('graphics')
+        grDevices = importr('grDevices')
+        plot = graphics.plot
+        rnorm = stats.rnorm
+        base64 = importr('base64')
+        import rpy2.robjects.packages as packages
+        openair = importr('openair')
+
+        from rpy2.robjects import r, pandas2ri
+        pandas2ri.activate()
+        #gen png plot
+        df['date'] = pd.to_datetime(df['date'])  
+        r_df = pandas2ri.py2ri(df)
+        #myplot = openair.timeVariation(r_df,r('c("'+'","'.join(metric_column_name[1:])+'")'),xlab =r('c("小时", "小时", "月份","星期" )'), normalise=normalized, statistic=statistic_type)
+        pngfile = base.tempfile()
+        grDevices.png( pngfile, width = plot_width, height = plot_height )
+        #myplot$plot$hour$x.scales$at<-c(seq(0,23,3),23)')
+        #if timeVariation_type=='all':
+        #    plot(myplot)
+        #else:
+        #    plot(myplot,subset=timeVariation_type)
+        openair.timeVariation(r_df,r('c("'+'","'.join(metric_column_name[1:])+'")'),xlab =r('c("小时", "小时", "月份","星期" )'), normalise=normalized, statistic=statistic_type)
+        grDevices.dev_off()
+        imgdata = base64.img( pngfile )
+
+        divstring = '<div>'+imgdata[0]+'</div> '
+        return  divstring
+
+class NVD3rCorPlotViz(NVD3Viz):
+
+    """A R Corplot plot"""
+
+    viz_type = 'rcorplot'
+    verbose_name = _('r corplot test')
+    sort_series = False
+    is_timeseries = True
+
+    def query_obj(self):
+        d = super(NVD3rCorPlotViz, self).query_obj()
+        d['metrics'] = self.form_data.get('metrics')
+
+        if not d:
+            raise Exception(_('Pick a metric for pollutants!'))
+        return d
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric_column_name = self.form_data.get('metrics')
+        plot_height = int(self.get_metric_label(fd.get('plot_height')))
+        plot_width = int(self.get_metric_label(fd.get('plot_width')))
+        dendrogram_type = self.get_metric_label(fd.get('normalized'))
+
+        metrics = self.metric_labels
+        metric_column_name=['date']
+        for i in range(len(metrics)):
+            metric_column_name.append(metrics[i].split('(')[1].split(')')[0])
+
+        columns = fd.get('columns') or []
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            columns=columns,
+            values=metrics)
+
+        df = df.reset_index() #convert pandas series to dataframe with timestamp
+        df.columns =  metric_column_name
+
+        #gen png plot
+        df['date'] = pd.to_datetime(df['date'])  
+        r_df = pandas2ri.py2ri(df)
+        pngfile = base.tempfile()
+        grDevices.png( pngfile, width = plot_width, height = plot_height )
+        #myplot$plot$hour$x.scales$at<-c(seq(0,23,3),23)')
+        openair.corPlot(r_df, dendrogram = dendrogram_type)
+        grDevices.dev_off()
+        imgdata = base64.img( pngfile )
+
+        divstring = '<div>'+imgdata[0]+'</div> '
+        return  divstring
+
+class NVD3rScatterPlotViz(NVD3Viz):
+
+    """A R Scatter plot"""
+
+    viz_type = 'rscatterplot'
+    verbose_name = _('r scatterplot test')
+    sort_series = False
+    is_timeseries = True
+
+    def query_obj(self):
+        d = super(NVD3rScatterPlotViz, self).query_obj()
+        d['metrics'] = self.form_data.get('metrics')
+
+        if not d:
+            raise Exception(_('Pick a metric for pollutants!'))
+        return d
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric_column_name = self.form_data.get('metrics')
+        plot_height = int(self.get_metric_label(fd.get('plot_height')))
+        plot_width = int(self.get_metric_label(fd.get('plot_width')))
+        method_type = self.get_metric_label(fd.get('statistic_type'))
+        smooth_type = self.get_metric_label(fd.get('normalized'))
+
+        metrics = self.metric_labels
+        metric_column_name=['date']
+        for i in range(len(metrics)):
+            metric_column_name.append(metrics[i].split('(')[1].split(')')[0])
+
+        columns = fd.get('columns') or []
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            columns=columns,
+            values=metrics)
+
+        df = df.reset_index() #convert pandas series to dataframe with timestamp
+        df.columns =  metric_column_name
+        #gen png plot
+        df['date'] = pd.to_datetime(df['date'])  
+        r_df = pandas2ri.py2ri(df)
+        pngfile = base.tempfile()
+        grDevices.png( pngfile, width = plot_width, height = plot_height )
+        #myplot$plot$hour$x.scales$at<-c(seq(0,23,3),23)')
+        openair.scatterPlot(r_df, x=metric_column_name[1], y=metric_column_name[2], method = method_type, col='jet', smooth=smooth_type)
+        grDevices.dev_off()
+        imgdata = base64.img( pngfile )
+
+        divstring = '<div>'+imgdata[0]+'</div> '
+        return  divstring
+
+
+
+class LineBarViz(NVD3Viz):
+    """A rich line chart with dual axis"""
+    viz_type = 'line_bar'
+    verbose_name = _('Time Series - Line Bar Chart')
+    sort_series = False
+    is_timeseries = True
+    def query_obj(self):
+        d = super(LineBarViz, self).query_obj()
+        m1 = self.form_data.get('metric')
+        m2 = self.form_data.get('metric_2')
+        d['metrics'] = [m1, m2]
+        if not m1:
+            raise Exception(_('Pick a metric for left(bar) axis!'))
+        if not m2:
+            raise Exception(_('Pick a metric for right(line) axis!'))
+        if m1 == m2:
+            raise Exception(_('Please choose different metrics'
+                            ' on left and right axis'))
+        return d
+    def to_series(self, df, classed=''):
+        cols = []
+        for col in df.columns:
+            if col == '':
+                cols.append('N/A')
+            elif col is None:
+                cols.append('NULL')
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict('series')
+        #print(series)
+        chart_data = []
+        metrics = [
+            self.form_data.get('metric'),
+            self.form_data.get('metric_2'),
+        ]
+        #print('metrics: ', metrics)
+        for i, m in enumerate(metrics):
+            print(' | ', m)
+            ys = series[m]
+            if df[m].dtype.kind not in 'biufc':
+                continue
+            series_title = m
+            d = {
+                'key': series_title,
+                'classed': classed,
+                'values': [
+                    {'x': ds, 'y': ys[ds] if ds in ys else None}
+                    for ds in df.index
+                ],
+                'yAxis': i + 1,
+                'type': 'bar' if i==0 else 'line',
+            }
+            chart_data.append(d)
+        return chart_data
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+        metric = self.get_metric_label(fd.get('metric'))
+        metric_2 = self.get_metric_label(fd.get('metric_2'))
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            values=[metric, metric_2])
+        chart_data = self.to_series(df)
+        return chart_data
+
+
 
 class NVD3TimeSeriesBarViz(NVD3TimeSeriesViz):
 
@@ -1425,7 +2323,7 @@ class NVD3TimeSeriesStackedViz(NVD3TimeSeriesViz):
     verbose_name = _('Time Series - Stacked')
     sort_series = True
 
-
+'''
 class DistributionPieViz(NVD3Viz):
 
     """Annoy visualization snobs with this controversial pie chart"""
@@ -1442,6 +2340,52 @@ class DistributionPieViz(NVD3Viz):
         df.sort_values(by=metric, ascending=False, inplace=True)
         df = df.reset_index()
         df.columns = ['x', 'y']
+        return df.to_dict(orient='records')
+'''
+
+class DistributionPieViz(NVD3Viz):
+
+    """Annoy visualization snobs with this controversial pie chart"""
+
+    viz_type = 'pie'
+    verbose_name = _('Distribution - NVD3 - Pie Chart')
+    is_timeseries = False
+
+    def query_obj(self):
+        d = super(DistributionPieViz, self).query_obj()  # noqa
+        fd = self.form_data
+        #print(fd)
+        #print(len(fd.get('metric')), len(fd.get('columns')))
+        if (
+            len(d['groupby']) <
+            len(fd.get('groupby') or []) + len(fd.get('columns') or [])
+        ):
+            raise Exception(
+                _("Can't have overlap between Series and Breakdowns"))
+        if not fd.get('metric'):
+            raise Exception('请选择一个指标。')
+        if not fd.get('groupby') or len(fd.get('groupby')) > 1:
+            raise Exception('请选择一个分组字段。')
+        if len(fd.get('columns')) > 1:
+            raise Exception('请选择一个排序字段。')
+        return d
+
+    def get_data(self, df):
+        fd = self.form_data        # 获得json格式化的数据
+        metric = self.metric_labels[0]
+        columns = fd.get('columns') or []  #从json格式化数据中获得columns的标签，不是数据，数据在df中
+        if not fd.get('columns'):      # 如果不需要排序，则按照metric的value来排序
+            df = df.pivot_table(
+                index=self.groupby,
+                values=[metric])
+            df.sort_values(by=metric, ascending=False, inplace=True)
+            df = df.reset_index()
+        else:
+            df.sort_values(by=columns, inplace=True)  #根据要求的排序字段排序
+            df.drop(columns, axis=1, inplace=True)   #排完序后，丢弃排序字段
+            df.reset_index(drop=True)     # df已经根据排序字段columns排好序，重新生成index并drop掉原有index
+        df.columns = ['x', 'y']
+        #df.sort_values(by=['x'], inplace=True)
         return df.to_dict(orient='records')
 
 
@@ -1492,7 +2436,7 @@ class HistogramViz(BaseViz):
         return chart_data
 
 
-class DistributionBarViz(DistributionPieViz):
+class DistributionBarViz(NVD3Viz):#class DistributionBarViz(DistributionPieViz):
 
     """A good old bar chart"""
 
@@ -1694,6 +2638,59 @@ class ChordViz(BaseViz):
             'matrix': m,
         }
 
+class tsDiffViz(BaseViz):
+
+    """A timeseries difference diagram"""
+
+    viz_type = 'tsdiff'
+    verbose_name = _('timeseries difference')
+    credits = '<a href="http://mcaule.github.io/d3-timeseries/">tsDiff</a>'
+    is_timeseries = True
+
+    def query_obj(self):
+        qry = super(tsDiffViz, self).query_obj()
+        fd = self.form_data
+        qry['groupby'] = [fd.get('groupby'), fd.get('columns')]
+        qry['metrics'] = [self.get_metric_label(fd.get('x')), self.get_metric_label(fd.get('y'))]
+        qry['orderby'] = [(qry['groupby'][0] , True)]
+        return qry
+
+    def get_data(self, df):
+#        print(df)
+        colNames = list(df.columns.values)
+        matrix = df.to_dict('records')
+        return {
+            'colNames':colNames,
+            'matrix':matrix,
+        }
+
+class tsCIViz(BaseViz):
+
+    """A timeseries CI diagram"""
+
+    viz_type = 'tsci'
+    verbose_name = _('timeseries CI')
+    credits = '<a href="http://mcaule.github.io/d3-timeseries/">tsDiff</a>'
+    is_timeseries = True
+
+    def query_obj(self):
+        qry = super(tsCIViz, self).query_obj()
+        fd = self.form_data
+        qry['groupby'] = [fd.get('groupby'), fd.get('columns')]
+        qry['metrics'] = [self.get_metric_label(fd.get('x')), self.get_metric_label(fd.get('y')),  self.get_metric_label(fd.get('metric'))]
+        qry['orderby'] = [(qry['groupby'][0] , True)]
+        return qry
+
+    def get_data(self, df):
+#        print(df)
+#        print(list(df.columns.values))
+        colNames = list(df.columns.values)
+        matrix = df.to_dict('records')
+        return {
+            'colNames':colNames,
+            'matrix':matrix,
+        }
+
 
 class CountryMapViz(BaseViz):
 
@@ -1796,6 +2793,7 @@ class FilterBoxViz(BaseViz):
         for flt in filters:
             qry['groupby'] = [flt]
             df = self.get_df_payload(query_obj=qry).get('df')
+            #print('22222\n', df)
             self.dataframes[flt] = df
 
     def filter_query_obj(self):
@@ -1819,6 +2817,7 @@ class FilterBoxViz(BaseViz):
                 'metric': row[1]}
                 for row in df.itertuples(index=False)
             ]
+        #print('!!!!!\n', d)
         return d
 
 
@@ -2217,7 +3216,7 @@ class BaseDeckGLViz(BaseViz):
             if extra_props:
                 feature['extraProps'] = extra_props
             features.append(feature)
-
+        print('!!!!!!!!!!!!\n', features)
         return {
             'features': features,
             'mapboxApiKey': config.get('MAPBOX_API_KEY'),

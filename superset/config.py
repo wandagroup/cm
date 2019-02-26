@@ -53,8 +53,9 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 SECRET_KEY = '\2\1thisismyscretkey\1\2\e\y\y\h'  # noqa
 
 # The SQLAlchemy connection string.
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATA_DIR, 'superset.db')
+# SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATA_DIR, 'superset.db')
 # SQLALCHEMY_DATABASE_URI = 'mysql://myapp@localhost/myapp'
+SQLALCHEMY_DATABASE_URI = 'mysql://root:wonders@localhost/cmdata?charset=utf8'
 # SQLALCHEMY_DATABASE_URI = 'postgresql://root:password@localhost/myapp'
 
 # In order to hook up a custom password store for all SQLACHEMY connections
@@ -89,10 +90,10 @@ ENABLE_PROXY_FIX = False
 # GLOBALS FOR APP Builder
 # ------------------------------
 # Uncomment to setup Your App name
-APP_NAME = 'Superset'
+APP_NAME = '崇明生态'
 
 # Uncomment to setup an App icon
-APP_ICON = '/static/assets/images/superset-logo@2x.png'
+APP_ICON = '/static/assets/images/logo_chongming.png'
 
 # Druid query timezone
 # tz.tzutc() : Using utc timezone
@@ -149,7 +150,7 @@ PUBLIC_ROLE_LIKE_GAMMA = False
 # Babel config for translations
 # ---------------------------------------------------
 # Setup default language
-BABEL_DEFAULT_LOCALE = 'en'
+BABEL_DEFAULT_LOCALE = 'zh'
 # Your application default translation path
 BABEL_DEFAULT_FOLDER = 'superset/translations'
 # The allowed translation for you app
@@ -201,7 +202,8 @@ ALLOWED_EXTENSIONS = set(['csv'])
 # CSV Options: key/value pairs that will be passed as argument to DataFrame.to_csv method
 # note: index option should not be overridden
 CSV_EXPORT = {
-    'encoding': 'utf-8',
+    #'encoding': 'utf-8',
+    'encoding': 'utf_8_sig',
 }
 
 # ---------------------------------------------------
@@ -313,10 +315,10 @@ CELERY_CONFIG = None
 # static http headers to be served by your Superset server.
 # This header prevents iFrames from other domains and
 # "clickjacking" as a result
-HTTP_HEADERS = {'X-Frame-Options': 'SAMEORIGIN'}
+#HTTP_HEADERS = {'X-Frame-Options': 'SAMEORIGIN'}
 # If you need to allow iframes from other domains (and are
 # aware of the risks), you can disable this header:
-# HTTP_HEADERS = {}
+HTTP_HEADERS = {}
 
 # The db id here results in selecting this one as a default in SQL Lab
 DEFAULT_DB_ID = None
@@ -415,7 +417,7 @@ HIVE_POLL_INTERVAL = 5
 # this enables programmers to customize certain charts (like the
 # geospatial ones) by inputing javascript in controls. This exposes
 # an XSS security vulnerability
-ENABLE_JAVASCRIPT_CONTROLS = False
+ENABLE_JAVASCRIPT_CONTROLS = True
 
 # The id of a template dashboard that should be copied to every new user
 DASHBOARD_TEMPLATE_ID = None

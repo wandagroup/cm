@@ -1,0 +1,21 @@
+.tsCI svg #circle circle {
+    fill: none;
+    pointer-events: all;
+}
+
+.tsCI svg .group path {
+    fill-opacity: .6;
+}
+
+.tsCI svg path.chord {
+    stroke: #000;
+    stroke-width: .25px;
+}
+
+.tsCI svg #circle:hover path.fade {
+    opacity: 0.2;
+}
+#tsCIChart{
+    margin: auto;
+    bottom: 5px;
+}

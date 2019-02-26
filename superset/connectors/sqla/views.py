@@ -156,8 +156,8 @@ class TableModelView(DatasourceModelView, DeleteMixin, YamlExportMixin):  # noqa
 
     list_columns = [
         'link', 'database_name',
-        'changed_by_', 'modified']
-    order_columns = ['modified']
+        'changed_by_', 'changed_on'] #'modified']
+    order_columns = ['changed_on']#, 'modified']
     add_columns = ['database', 'schema', 'table_name']
     edit_columns = [
         'table_name', 'sql', 'filter_select_enabled',
@@ -239,6 +239,7 @@ class TableModelView(DatasourceModelView, DeleteMixin, YamlExportMixin):  # noqa
         'is_sqllab_view': _('SQL Lab View'),
         'template_params': _('Template parameters'),
         'modified': _('Modified'),
+        'changed_on': '修改时间',
     }
 
     def pre_add(self, table):
